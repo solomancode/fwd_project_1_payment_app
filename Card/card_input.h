@@ -1,0 +1,26 @@
+#ifndef CARD_INPUT_H
+#define CARD_INPUT_H
+
+typedef enum
+{
+    SIM_VALID_CARD_HOLDER_NAME = 1,
+    SIM_INVALID_CARD_HOLDER_NAME_LT_20,
+    SIM_INVALID_CARD_HOLDER_NAME_GT_24,
+} CardHolderNameOptions;
+
+typedef enum
+{
+    SIM_VALID_PAN = 1,
+    SIM_VALID_PAN_STOLEN_CARD,
+    SIM_INVALID_PAN_LT_16,
+    SIM_INVALID_PAN_GT_19,
+} CardPanOptions;
+
+typedef enum
+{
+    SIM_VALID_EXPIRY_DATE_FORMAT = 1,
+    SIM_VALID_EXPIRY_DATE_FORMAT_EXPIRED,
+    SIM_INVALID_EXPIRY_DATE_FORMAT,
+} CardDateFormatOptions;
+
+#endif

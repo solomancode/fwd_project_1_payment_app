@@ -103,25 +103,25 @@ void appStart(void)
     if (valid_tsx_amount_or_err == LOW_BALANCE)
         report_low_balance(&tsx);
 
-    // EN_serverError_t valid_tsx_or_err = receiveTransactionData(&tsx);
+    EN_serverError_t valid_tsx_or_err = receiveTransactionData(&tsx);
 
-    // switch (valid_tsx_or_err)
-    // {
-    // case DECLINED_STOLEN_CARD:
-    //     report_stolen_card(&tsx);
-    //     break;
+    switch (valid_tsx_or_err)
+    {
+    case DECLINED_STOLEN_CARD:
+        report_stolen_card(&tsx);
+        break;
 
-    // case DECLINED_INSUFFICIENT_FUND:
-    //     report_low_balance(&tsx);
-    //     break;
+    case DECLINED_INSUFFICIENT_FUND:
+        report_low_balance(&tsx);
+        break;
 
-    // case INTERNAL_SERVER_ERROR:
-    //     exit_on_error(true, "Internal Server Error");
-    //     break;
+    case INTERNAL_SERVER_ERROR:
+        exit_on_error(true, "Internal Server Error");
+        break;
 
-    // default:
-    //     print_ok("Valid Transaction");
-    // }
+    default:
+        print_ok("Valid Transaction");
+    }
 
     EN_serverError_t save_or_err = saveTransaction(&tsx);
     exit_on_error(save_or_err == INTERNAL_SERVER_ERROR, "Internal Server Error");

@@ -4,6 +4,12 @@
 #include "../Card/card.h"
 #include "../Terminal/terminal.h"
 
+typedef enum EN_accountState_t
+{
+    RUNNING,
+    BLOCKED
+} EN_accountState_t;
+
 typedef enum EN_transState_t
 {
     APPROVED,
@@ -35,6 +41,7 @@ typedef enum EN_serverError_t
 typedef struct ST_accountsDB_t
 {
     float balance;
+    EN_accountState_t state;
     uint8_t primaryAccountNumber[20];
 } ST_accountsDB_t;
 
@@ -46,5 +53,6 @@ EN_serverError_t isValidAccount(ST_cardData_t *cardData);
 EN_serverError_t isAmountAvailable(ST_terminalData_t *termData);
 EN_serverError_t saveTransaction(ST_transaction_t *transData);
 EN_serverError_t getTransaction(uint32_t transactionSequenceNumber, ST_transaction_t *transData);
+EN_serverError_t isBlockedAccount(ST_accountsDB_t *accountRefrence);
 
 #endif

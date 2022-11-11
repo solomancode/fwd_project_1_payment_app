@@ -74,54 +74,91 @@ unsigned int parse_transactions_data(char *data, ST_transaction_t **transactions
     return t_i;
 }
 
-void insert_account(int i, char *pan, char *balance, ST_accountsDB_t **accounts)
+void insert_account(int i, EN_accountState_t state, char *pan, char *balance, ST_accountsDB_t **accounts)
 {
     ST_accountsDB_t *record = malloc(sizeof(ST_accountsDB_t));
     record->balance = atoi(balance);
     strcpy(record->primaryAccountNumber, pan);
+    record->state = state;
     accounts[i] = record;
 }
 
+EN_accountState_t parse_account_state(char ch)
+{
+    if (ch == '1')
+    {
+        return BLOCKED;
+    }
+    else
+    {
+        return RUNNING;
+    }
+}
+
+typedef enum
+{
+    ACCOUNT_STATE,
+    ACCOUNT_PAN,
+    ACCOUNT_BALANACE
+} EnumParseAccountState;
+
 unsigned int parse_accounts_data(char *data, ST_accountsDB_t **accounts)
 {
-    bool delim = false;
-    int i_account = 0;
-    int i_pan = 0;
-    int i_balance = 0;
-    char *pan = calloc(20, sizeof(char));
-    char *balance = calloc(4, sizeof(char));
+    EnumParseAccountState parse_state = ACCOUNT_STATE;
+    int account_index = 0;
+    EN_accountState_t buffer_state;
+    int buffer_pan_index = 0;
+    char buffer_pan[50] = {0};
+    int buffer_balance_index = 0;
+    char buffer_balance[4] = {0};
     for (size_t i = 0; i < strlen(data); i++)
     {
         char ch = data[i];
         if (ch == '\n' || ch == EOF)
         {
-            insert_account(i_account, pan, balance, accounts);
-            i_account++;
-            pan = calloc(20, sizeof(char));
-            balance = calloc(4, sizeof(char));
-            i_pan = 0;
-            i_balance = 0;
-            delim = false;
+            insert_account(account_index, buffer_state, buffer_pan, buffer_balance, accounts);
+
+            for (size_t j = 0; j < buffer_pan_index; j++)
+            {
+                buffer_pan[j] = 0;
+            }
+            buffer_pan_index = 0;
+
+            for (size_t j = 0; j < buffer_balance_index; j++)
+            {
+                buffer_balance[j] = 0;
+            }
+            buffer_balance_index = 0;
+
+            parse_state = ACCOUNT_STATE;
+            account_index++;
+
             continue;
-        };
+        }
+
         if (ch == ',')
         {
-            delim = true;
+            parse_state++;
             continue;
         }
-        if (delim == false)
+
+        switch (parse_state)
         {
-            *(pan + i_pan) = ch;
-            i_pan++;
-        }
-        else
-        {
-            *(balance + i_balance) = ch;
-            i_balance++;
+        case ACCOUNT_STATE:
+            buffer_state = parse_account_state(ch);
+            break;
+        case ACCOUNT_PAN:
+            buffer_pan[buffer_pan_index] = ch;
+            buffer_pan_index++;
+            break;
+        case ACCOUNT_BALANACE:
+            buffer_balance[buffer_balance_index] = ch;
+            buffer_balance_index++;
+            break;
         }
     }
-    insert_account(i_account, pan, balance, accounts);
-    return i_account + 1;
+    // insert_account(account_index, state, pan, balance, accounts);
+    return account_index + 1;
 }
 
 void serialize_card_data(ST_cardData_t *card, char_t out[])
@@ -133,7 +170,7 @@ void serialize_account(ST_accountsDB_t *account, char_t out[])
 {
     char_t balance[5];
     float_to_string(account->balance, 4, balance);
-    sprintf(out, "%s,%s\n", account->primaryAccountNumber, balance);
+    sprintf(out, "%d,%s,%s\n", account->state, account->primaryAccountNumber, balance);
 }
 
 void serialize_terminal_data(ST_terminalData_t *term, char_t out[])

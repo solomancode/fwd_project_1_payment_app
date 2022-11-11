@@ -1,6 +1,11 @@
 #include "server.h"
 #include "../Database/database.h"
 
+EN_serverError_t isBlockedAccount(ST_accountsDB_t *accountRefrence)
+{
+    return accountRefrence->state;
+}
+
 EN_transState_t receiveTransactionData(ST_transaction_t *transData)
 {
     EN_serverError_t valid_account_or_err = isValidAccount(&transData->cardHolderData);

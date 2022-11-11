@@ -17,7 +17,7 @@
 #define data_invalid_pan_lt_16 ""
 #define data_invalid_pan_gt_19 "55425233430109903425233430109903"
 
-#define data_stolen_card_pan "0000000000000000"
+#define data_stolen_card_pan "9437525041975812"
 
 #define data_invalid_date_format_expected_dd_mm_yy "06-2022"
 

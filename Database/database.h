@@ -29,4 +29,5 @@ Result insert_transaction(Database *db, ST_transaction_t *tsx);
 
 void on_insert_transaction(Database *db, ST_transaction_t *tsx);
 
+void read_accounts_table(ST_accountsDB_t **accounts, unsigned int *count);
 #endif

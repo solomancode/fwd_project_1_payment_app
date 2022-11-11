@@ -46,10 +46,12 @@ Result find_account(Database *db, char *PAN, ST_accountsDB_t *found)
     for (size_t i = 0; i < db->accounts_count; i++)
     {
         char *current = db->accounts[i]->primaryAccountNumber;
+        // printf("find acc: %s == %s %s\n", PAN, current, strcmp(current, PAN) == 0 ? "M" : "!");
         if (strcmp(current, PAN) == 0)
         {
             string_copy(found->primaryAccountNumber, db->accounts[i]->primaryAccountNumber);
             found->balance = db->accounts[i]->balance;
+            found->state = db->accounts[i]->state;
             return SUCCESS;
         }
     }

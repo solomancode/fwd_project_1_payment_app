@@ -25,8 +25,9 @@ void simulate_reading_card_name(ST_cardData_t *card_data)
 
 int simulate_reading_pan(ST_cardData_t *cardData)
 {
-    Select *select = select_create_empty(4, 20);
+    Select *select = select_create_empty(5, 20);
     select_add_item(select, green_text("use valid PAN"));
+    select_add_item(select, green_text("use valid PAN ( fraud card )"));
     select_add_item(select, green_text("use valid PAN ( stolen card )"));
     select_add_item(select, red_text("use invalid PAN < 16"));
     select_add_item(select, red_text("use invalid PAN > 19"));
@@ -35,6 +36,9 @@ int simulate_reading_pan(ST_cardData_t *cardData)
     {
     case SIM_VALID_PAN:
         string_copy(cardData->primaryAccountNumber, data_valid_pan);
+        break;
+    case SIM_VALID_PAN_FRAUD_CARD:
+        string_copy(cardData->primaryAccountNumber, data_fraud_card_pan);
         break;
     case SIM_VALID_PAN_STOLEN_CARD:
         string_copy(cardData->primaryAccountNumber, data_stolen_card_pan);

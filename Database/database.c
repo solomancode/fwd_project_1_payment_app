@@ -46,7 +46,6 @@ Result find_account(Database *db, char *PAN, ST_accountsDB_t *found)
     for (size_t i = 0; i < db->accounts_count; i++)
     {
         char *current = db->accounts[i]->primaryAccountNumber;
-        // printf("find acc: %s == %s %s\n", PAN, current, strcmp(current, PAN) == 0 ? "M" : "!");
         if (strcmp(current, PAN) == 0)
         {
             string_copy(found->primaryAccountNumber, db->accounts[i]->primaryAccountNumber);
@@ -93,18 +92,25 @@ Result find_transaction(Database *db, uint32_t sequenceNumber, ST_transaction_t 
     return FAILED;
 }
 
-Result update_account_balance(Database *db, char_t pan[], float amount)
+void update_account_balance(Database *db, ST_transaction_t *tsx)
 {
+    if (tsx->transState != APPROVED)
+        return;
+
+    char *target_pan = tsx->cardHolderData.primaryAccountNumber;
     for (size_t i = 0; i < db->accounts_count; i++)
     {
-        if (strcmp(pan, db->accounts[i]->primaryAccountNumber) == 0)
+        ST_accountsDB_t *account = db->accounts[i];
+        char *current_pan = account->primaryAccountNumber;
+        int is_match = strcmp(current_pan, target_pan);
+        if (is_match == 0)
         {
-            db->accounts[i]->balance -= amount;
+            db->accounts[i]->balance -= tsx->terminalData.transAmount;
         }
     }
     size_t size = sizeof(*db->accounts[0]);
     char_t *table_data = (char_t *)calloc(db->accounts_count, size);
-    for (size_t i = 0; i < db->accounts_count - 1; i++)
+    for (size_t i = 0; i < db->accounts_count; i++)
     {
         char_t data[500];
         serialize_account(db->accounts[i], data);
@@ -115,8 +121,5 @@ Result update_account_balance(Database *db, char_t pan[], float amount)
 
 void on_insert_transaction(Database *db, ST_transaction_t *tsx)
 {
-    if (tsx->transState == APPROVED)
-    {
-        update_account_balance(db, tsx->cardHolderData.primaryAccountNumber, tsx->terminalData.transAmount);
-    }
+    update_account_balance(db, tsx);
 }

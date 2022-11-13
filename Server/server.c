@@ -3,36 +3,42 @@
 
 EN_serverError_t isBlockedAccount(ST_accountsDB_t *accountRefrence)
 {
-    return accountRefrence->state;
+    return accountRefrence->state == BLOCKED ? ACCOUNT_NOT_FOUND : OK;
 }
 
 EN_transState_t receiveTransactionData(ST_transaction_t *transData)
 {
-    EN_serverError_t valid_account_or_err = isValidAccount(&transData->cardHolderData);
-    if (valid_account_or_err == ACCOUNT_NOT_FOUND)
-        return DECLINED_STOLEN_CARD;
-    EN_serverError_t valid_amount_or_err = isAmountAvailable(&transData->terminalData);
-    if (valid_amount_or_err == LOW_BALANCE)
-        return DECLINED_INSUFFICIENT_FUND;
-    EN_serverError_t saved_transaction_or_err = saveTransaction(transData);
-    if (saved_transaction_or_err == INTERNAL_SERVER_ERROR)
-        return INTERNAL_SERVER_ERROR;
-    return OK;
-}
-
-bool validate_card_pan(char *pan)
-{
     Database db = connect_database();
     ST_accountsDB_t found;
-    Result is_found = find_account(&db, pan, &found);
-    return is_found == SUCCESS;
-}
+    Result is_found = find_account(&db, transData->cardHolderData.primaryAccountNumber, &found);
+    if (is_found == FAILED)
+    {
+        transData->transState = FRAUD_CARD;
+        EN_serverError_t saved_transaction_or_err = saveTransaction(transData);
+        return (saved_transaction_or_err == INTERNAL_SERVER_ERROR) ? INTERNAL_SERVER_ERROR : FRAUD_CARD;
+    }
+    else
+    {
+        EN_serverError_t valid_account_or_err = isBlockedAccount(&found);
+        if (valid_account_or_err == ACCOUNT_NOT_FOUND)
+        {
+            transData->transState = DECLINED_STOLEN_CARD;
+            EN_serverError_t saved_transaction_or_err = saveTransaction(transData);
+            return (saved_transaction_or_err == INTERNAL_SERVER_ERROR) ? INTERNAL_SERVER_ERROR : DECLINED_STOLEN_CARD;
+        }
 
-EN_serverError_t isValidAccount(ST_cardData_t *cardData)
-{
-    print_title("🔎 Validating Card PAN...");
-    print_key_value("primaryAccountNumber", cardData->primaryAccountNumber);
-    return validate_card_pan(cardData->primaryAccountNumber) ? OK : ACCOUNT_NOT_FOUND;
+        EN_serverError_t valid_amount_or_err = isAmountAvailable(&transData->terminalData);
+        if (valid_amount_or_err == LOW_BALANCE)
+        {
+            transData->transState = DECLINED_INSUFFICIENT_FUND;
+            EN_serverError_t saved_transaction_or_err = saveTransaction(transData);
+            return (saved_transaction_or_err == INTERNAL_SERVER_ERROR) ? INTERNAL_SERVER_ERROR : DECLINED_INSUFFICIENT_FUND;
+        }
+
+        transData->transState = APPROVED;
+        EN_serverError_t saved_transaction_or_err = saveTransaction(transData);
+        return (saved_transaction_or_err == INTERNAL_SERVER_ERROR) ? INTERNAL_SERVER_ERROR : APPROVED;
+    }
 }
 
 EN_serverError_t isAmountAvailable(ST_terminalData_t *termData)

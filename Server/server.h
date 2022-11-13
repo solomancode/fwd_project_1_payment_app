@@ -15,7 +15,8 @@ typedef enum EN_transState_t
     APPROVED,
     DECLINED_INSUFFICIENT_FUND,
     DECLINED_STOLEN_CARD,
-    INTERNAL_SERVER_ERROR
+    INTERNAL_SERVER_ERROR,
+    FRAUD_CARD
 } EN_transState_t;
 
 typedef struct ST_transaction_t
@@ -35,7 +36,8 @@ typedef enum EN_serverError_t
     SAVING_FAILED = 1,
     TRANSACTION_NOT_FOUND,
     ACCOUNT_NOT_FOUND,
-    LOW_BALANCE
+    LOW_BALANCE,
+
 } EN_serverError_t;
 
 typedef struct ST_accountsDB_t

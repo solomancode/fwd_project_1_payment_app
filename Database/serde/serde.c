@@ -157,8 +157,7 @@ unsigned int parse_accounts_data(char *data, ST_accountsDB_t **accounts)
             break;
         }
     }
-    // insert_account(account_index, state, pan, balance, accounts);
-    return account_index + 1;
+    return account_index;
 }
 
 void serialize_card_data(ST_cardData_t *card, char_t out[])

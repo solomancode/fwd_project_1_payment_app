@@ -11,6 +11,7 @@ typedef enum
 typedef enum
 {
     SIM_VALID_PAN = 1,
+    SIM_VALID_PAN_FRAUD_CARD,
     SIM_VALID_PAN_STOLEN_CARD,
     SIM_INVALID_PAN_LT_16,
     SIM_INVALID_PAN_GT_19,
